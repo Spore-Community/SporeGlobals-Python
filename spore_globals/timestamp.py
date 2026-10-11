@@ -2,11 +2,6 @@
 
 '''Provides Spore-related timestamps.'''
 
-__author__ = '0KepOnline' # https://github.com/0KepOnline
-__license__ = 'MIT' # see: "LICENSE"
-__maintainer__ = '0KepOnline'
-__email__ = 'i.am@scenariopla.net'
-
 
 
 

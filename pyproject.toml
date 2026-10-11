@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spore_globals"
+version = "0.0.1"
+description = "General use primitive objects of Spore & related functions in Python"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "0KepOnline", email = "i.am@scenariopla.net"},
+]
+keywords = ["spore", "modding", "game"]
+requires-python = ">=3.10"
+
+[project.urls]
+Repository = "https://github.com/Spore-Community/SporeGlobals-Python"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["spore_globals"]

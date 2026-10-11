@@ -4,16 +4,11 @@
 
 from __future__ import annotations
 
-__author__ = '0KepOnline' # https://github.com/0KepOnline
-__license__ = 'MIT' # see: "LICENSE"
-__maintainer__ = '0KepOnline'
-__email__ = 'i.am@scenariopla.net'
 
 
 
-
-from timestamp import Timestamp
 from typing import Callable
+from .timestamp import Timestamp
 
 
 
@@ -23,7 +18,8 @@ class ResourceKey:
 
     Attributes:
         instance_id (int): The instance ID that is used to identify the object
-            (file/some kind of inode). Generates a new from the current timestamp if not specified.
+                           (file/some kind of inode). Generates a new from the current timestamp
+                           if not specified.
         type_id (int): The type (extension) ID.
         group_id (int): The group (folder) ID.
     '''

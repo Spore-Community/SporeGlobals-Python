@@ -4,15 +4,9 @@
 
 from __future__ import annotations
 
-__author__ = '0KepOnline' # https://github.com/0KepOnline
-__license__ = 'MIT' # see: "LICENSE"
-__maintainer__ = '0KepOnline'
-__email__ = 'i.am@scenariopla.net'
 
 
 
-
-from timestamp import Timestamp
 from typing import Callable, overload
 
 
@@ -30,18 +24,15 @@ class Color:
     '''
     @overload
     def __init__(self) -> None: ...
-    
     @overload
     def __init__(self, value: int) -> None: ...
-    
     @overload
     def __init__(self, r: int, g: int, b: int, a: int) -> None: ...
-
     def __init__(self,
                  value_r: int = 0,
                  g: int | None = None,
                  b: int | None = None,
-                 a: int | None = None):
+                 a: int | None = None) -> None:
         if g is None:
             self.value = value_r
         else:
@@ -114,7 +105,7 @@ class Color:
         if not isinstance(other, Color):
             return NotImplemented
         return self.value == other.value
-    
+
     def __str__(self) -> str:
         '''Gets a stringified color.
         
@@ -156,6 +147,21 @@ class Color:
         self.value -= other.value
         return self
 
+    RED: Color
+    BLUE: Color
+    GREEN: Color
+    WHITE: Color
+    BLACK: Color
+
+Color.RED = Color(255, 0, 0, 255)
+Color.BLUE = Color(0, 0, 255, 255)
+Color.GREEN = Color(0, 255, 0, 255)
+Color.WHITE = Color(255, 255, 255, 255)
+Color.BLACK = Color(0, 0, 0, 255)
+
+
+
+
 class ColorRGB:
     '''A class that represents Spore RGB float colors.
 
@@ -166,20 +172,17 @@ class ColorRGB:
     '''
     @overload
     def __init__(self) -> None: ...
-
     @overload
     def __init__(self, color: Color) -> None: ...
-    
     @overload
     def __init__(self,
                  r: float | None,
                  g: float | None,
                  b: float | None) -> None: ...
-
     def __init__(self,
                  r_color: float | Color | None = None,
                  g: float | None = None,
-                 b: float | None = None):
+                 b: float | None = None) -> None:
         if isinstance(r_color, Color):
             self.r = r_color.r / 0xff
             self.g = r_color.g / 0xff
@@ -214,6 +217,7 @@ class ColorRGB:
         self._b: float = b_modified if b_modified is not None else 0
 
     def to_int_color(self) -> Color:
+        '''Converts to the 8-bit ARGB color.'''
         return Color(round(self.r * 0xff), round(self.g * 0xff), round(self.b * 0xff), 0xff)
 
     def __str__(self) -> str:
@@ -222,7 +226,7 @@ class ColorRGB:
         Returns:
             out (str): The formatted RGB color (r, g, b).'''
         return f'({self.r}, {self.g}, {self.b})'
-    
+
     def __eq__(self, other: object) -> bool:
         '''Compares two float colors for equality. 
         
@@ -240,6 +244,9 @@ class ColorRGB:
             and self_a == other_a
         )
 
+
+
+
 class ColorRGBA(ColorRGB):
     '''A class that represents Spore RGBA float colors.
 
@@ -251,25 +258,21 @@ class ColorRGBA(ColorRGB):
     '''
     @overload
     def __init__(self) -> None: ...
-
     @overload
     def __init__(self, color: Color) -> None: ...
-
     @overload
     def __init__(self, color: ColorRGB, a: float | None) -> None: ...
-    
     @overload
     def __init__(self,
-                    r: float | None,
-                    g: float | None,
-                    b: float | None,
-                    a: float | None) -> None: ...
-
+                 r: float | None,
+                 g: float | None,
+                 b: float | None,
+                 a: float | None) -> None: ...
     def __init__(self,
                  r_color: float | Color | None = None,
                  g_a: float | None = None,
                  b: float | None = None,
-                 a: float | None = None):
+                 a: float | None = None) -> None:
         if isinstance(r_color, Color):
             super().__init__(r_color)
             self.a = r_color.a / 0xff
@@ -292,7 +295,7 @@ class ColorRGBA(ColorRGB):
         color: Color = super().to_int_color()
         color.a = round(self.a * 0xff)
         return color
-    
+
     def __str__(self) -> str:
         '''Gets a stringified RGBA color.
         
