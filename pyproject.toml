@@ -13,7 +13,7 @@ authors = [
     {name = "0KepOnline", email = "i.am@scenariopla.net"},
 ]
 keywords = ["spore", "modding", "game"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.urls]
 Repository = "https://github.com/Spore-Community/SporeGlobals-Python"

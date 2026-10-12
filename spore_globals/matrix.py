@@ -8,7 +8,7 @@ from __future__ import annotations
 
 
 from math import atan2, sqrt, sin, cos
-from typing import overload, TYPE_CHECKING
+from typing import Self, overload, TYPE_CHECKING
 from .vector import Vector3, Z_AXIS
 if TYPE_CHECKING:
     from .quaternion import Quaternion
@@ -60,9 +60,14 @@ class Matrix3:
         '''
         return [self.m[i][index] for i in range(3)]
 
-    def set_identity(self) -> None:
-        '''Sets the matrix to the identity matrix (1.0s in the diagonal, everything else 0.0s).'''
+    def set_identity(self) -> Self:
+        '''Sets the matrix to the identity matrix (1.0s in the diagonal, everything else 0.0s).
+
+        Returns:
+            out (Self).
+        '''
         self.m = [[1 if i == j else 0 for j in range(3)] for i in range(3)]
+        return self
 
     def to_euler(self) -> Vector3:
         '''Gets the euler angles (in radians) equivalent to the matrix rotation.
@@ -307,9 +312,14 @@ class Matrix4:
         '''
         return [self.m[i][index] for i in range(4)]
 
-    def set_identity(self) -> None:
-        '''Sets the matrix to the identity matrix (1.0s in the diagonal, everything else 0.0s).'''
+    def set_identity(self) -> Self:
+        '''Sets the matrix to the identity matrix (1.0s in the diagonal, everything else 0.0s).
+        
+        Returns:
+            out (Self).
+        '''
         self.m = [[1 if i == j else 0 for j in range(4)] for i in range(4)]
+        return self
 
     def transposed(self) -> Matrix4:
         '''Gets the transpose of the matrix (rows and columns swapped).
