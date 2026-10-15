@@ -1,3 +1,5 @@
 .vscode
 __pycache__
+build
+*.egg-info
 spore_globals/__pycache__
