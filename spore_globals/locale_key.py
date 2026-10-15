@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Provides Spore locale keys (similar to resource keys, but with a pair of u32 fields).'''
+'''Provides Spore locale keys (similar to resource keys, but with a pair of UInt32 fields).'''
 
 from __future__ import annotations
 
