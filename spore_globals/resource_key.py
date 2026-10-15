@@ -13,6 +13,8 @@ from .timestamp import Timestamp
 
 
 
+_last_instance_id: int = 0 # pylint: disable=invalid-name
+
 class ResourceKey:
     '''A class that represents Spore resource key.
 
@@ -23,12 +25,24 @@ class ResourceKey:
         type_id (UInt32): The type (extension) ID.
         group_id (UInt32): The group (folder) ID.
     '''
+    @staticmethod
+    def _next_instance_id() -> int:
+        '''Gets the new instance ID. Spore renerates one when launched, this method increments the
+        last only if the current is the same.
+        
+        Returns:
+            out (int): The next instance ID.
+        '''
+        global _last_instance_id # pylint: disable=global-statement
+        _last_instance_id = max(Timestamp().instance_id(), _last_instance_id + 1)
+        return _last_instance_id
+
     def __init__(self,
                  instance_id: UInt32 | int | None = Timestamp,
                  type_id: UInt32 | int | None = None,
                  group_id: UInt32 | int | None = None) -> None:
         if instance_id is Timestamp:
-            self.instance_id = Timestamp().instance_id()
+            self.instance_id = ResourceKey._next_instance_id()
         else:
             self.instance_id = instance_id if not isinstance(instance_id, type) else None
         self.type_id = type_id
