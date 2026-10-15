@@ -2,11 +2,13 @@
 
 '''Provides C-like fixed strings of a certain size.'''
 
+from __future__ import annotations
+
 
 
 
 from collections import UserString
-from typing import overload
+from typing import ClassVar, overload
 from fixedint import UInt8, UInt16, UInt32
 
 
@@ -24,10 +26,13 @@ def _validate_char(instance: _IStringFixed) -> None:
 
 class _IStringFixed(UserString):
     '''A private interface that is used for strings of a fixed character size.'''
-    _encoding: str
+    encoding: ClassVar[str]
+    '''The encoding used for this string.'''
+    width: ClassVar[int] = 8
+    '''The width in bits.'''
+
     _locked: bool = False
     _terminate: bool = True
-    _width: int = 8
 
     def __init_subclass__(cls) -> None:
         if _IStringFixed._locked:
@@ -48,21 +53,11 @@ class _IStringFixed(UserString):
         elif isinstance(value, list):
             value = ''.join(map(chr, value))
         elif isinstance(value, bytes | bytearray):
-            value = bytes(value).decode(self._encoding, 'replace')
-        value = str(value).encode(self._encoding, 'replace').decode(self._encoding)
+            value = bytes(value).decode(self.encoding, 'replace')
+        value = str(value).encode(self.encoding, 'replace').decode(self.encoding)
         if self._terminate:
             value = value.split('\0', 1)[0]
         super().__init__(value)
-
-    @property
-    def encoding(self) -> str:
-        '''The encoding used for this string.'''
-        return self._encoding
-
-    @property
-    def width(self) -> int:
-        '''The width in bits.'''
-        return self._width
 
 
 
@@ -73,8 +68,8 @@ class String8(_IStringFixed):
     Attributes:
         width (int) = 8: The width in bits.
     '''
-    _encoding = 'latin-1'
-    _width = 8
+    encoding = 'latin-1'
+    width = 8
 
     @overload
     def __getitem__(self, index: int) -> Char8: ...
@@ -94,8 +89,8 @@ class String16(_IStringFixed):
     
     Attributes:
         width (int) = 16: The width in bits.'''
-    _encoding = 'utf-16-le'
-    _width = 16
+    encoding = 'utf-16-le'
+    width = 16
 
     @overload
     def __getitem__(self, index: int) -> Char16: ...
@@ -115,8 +110,8 @@ class String32(_IStringFixed):
     
     Attributes:
         width (int) = 32: The width in bits.'''
-    _encoding = 'utf-32-le'
-    _width = 32
+    encoding = 'utf-32-le'
+    width = 32
 
     @overload
     def __getitem__(self, index: int) -> Char32: ...

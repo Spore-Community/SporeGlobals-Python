@@ -66,7 +66,7 @@ class Matrix3:
         Returns:
             out (Self).
         '''
-        self.m = [[1 if i == j else 0 for j in range(3)] for i in range(3)]
+        self.m = [[1.0 if i == j else 0 for j in range(3)] for i in range(3)]
         return self
 
     def to_euler(self) -> Vector3:
@@ -229,6 +229,63 @@ class Matrix3:
         return self.m == other.m
 
     @overload
+    def __getitem__(self, index: int) -> list[float]: ...
+    @overload
+    def __getitem__(self, index: tuple[int, int]) -> float:
+        '''Gets a single floating point value of the matrix.
+
+        Arguments:
+            index (tuple[int, int]): The (row, column) indices (0-2).
+        
+        Returns:
+            out (float): The value.
+        '''
+        ...
+    def __getitem__(self, index: int | tuple[int, int]) -> list[float] | float:
+        '''Gets a row of the matrix.
+
+        Arguments:
+            index (int): The row index (0-2).
+        
+        Returns:
+            out (list[float]): The row values.
+        '''
+        if isinstance(index, int):
+            return self.m[index]
+        if isinstance(index, tuple) and len(index) == 2:
+            return self.m[index[0]][index[1]]
+        raise TypeError(f'Matrix3 indices must be int or (int, int), not {type(index).__name__}.')
+
+    @overload
+    def __setitem__(self, index: int, value: list[float]) -> None: ...
+    @overload
+    def __setitem__(self, index: tuple[int, int], value: float) -> None:
+        '''Sets a single floating point value of the matrix.
+
+        Arguments:
+            index (tuple[int, int]): The (row, column) indices (0-2).
+            value (float): The value to set.
+        '''
+        ...
+    def __setitem__(self, index: int | tuple[int, int], value: list[float] | float) -> None:
+        '''Sets a row of the matrix.
+
+        Arguments:
+            index (int): The row index (0-2).
+            value (list[float]): The row values (3).
+        '''
+        if isinstance(index, int):
+            if not isinstance(value, list) or len(value) != 3:
+                raise ValueError('Matrix3 row must be a list of exactly 3 values.')
+            self.m[index] = value
+        elif isinstance(index, tuple) and len(index) == 2:
+            self.m[index[0]][index[1]] = value
+        else:
+            raise TypeError(
+                f'Matrix3 indices must be int or (int, int), not {type(index).__name__}.'
+            )
+
+    @overload
     def __mul__(self, other: Matrix3) -> Matrix3: ...
     @overload
     def __mul__(self, other: Vector3) -> Vector3:
@@ -360,3 +417,60 @@ class Matrix4:
         if not isinstance(other, Matrix4):
             return NotImplemented
         return self.m == other.m
+
+    @overload
+    def __getitem__(self, index: int) -> list[float]: ...
+    @overload
+    def __getitem__(self, index: tuple[int, int]) -> float:
+        '''Gets a single floating point value of the matrix.
+
+        Arguments:
+            index (tuple[int, int]): The (row, column) indices (0-3).
+        
+        Returns:
+            out (float): The value.
+        '''
+        ...
+    def __getitem__(self, index: int | tuple[int, int]) -> list[float] | float:
+        '''Gets a row of the matrix.
+
+        Arguments:
+            index (int): The row index (0-3).
+        
+        Returns:
+            out (list[float]): The row values.
+        '''
+        if isinstance(index, int):
+            return self.m[index]
+        if isinstance(index, tuple) and len(index) == 2:
+            return self.m[index[0]][index[1]]
+        raise TypeError(f'Matrix4 indices must be int or (int, int), not {type(index).__name__}.')
+    
+    @overload
+    def __setitem__(self, index: int, value: list[float]) -> None: ...
+    @overload
+    def __setitem__(self, index: tuple[int, int], value: float) -> None:
+        '''Sets a single floating point value of the matrix.
+
+        Arguments:
+            index (tuple[int, int]): The (row, column) indices (0-3).
+            value (float): The value to set.
+        '''
+        ...
+    def __setitem__(self, index: int | tuple[int, int], value: list[float] | float) -> None:
+        '''Sets a row of the matrix.
+
+        Arguments:
+            index (int): The row index (0-3).
+            value (list[float]): The row values (4).
+        '''
+        if isinstance(index, int):
+            if not isinstance(value, list) or len(value) != 4:
+                raise ValueError('Matrix4 row must be a list of exactly 4 values.')
+            self.m[index] = value
+        elif isinstance(index, tuple) and len(index) == 2:
+            self.m[index[0]][index[1]] = value
+        else:
+            raise TypeError(
+                f'Matrix4 indices must be int or (int, int), not {type(index).__name__}.'
+            )

@@ -83,6 +83,14 @@ class ResourceKey:
             and self.group_id == other.group_id
         )
 
+    def __hash__(self) -> int:
+        '''Gets the hash of the resource key.
+        
+        Returns:
+            out (int): The hash of the key.
+        '''
+        return hash((self.instance_id, self.type_id, self.group_id))
+
     def __lt__(self, other: object) -> bool:
         '''Compares two resource keys for the first to be less than another.
         Starts to check with instance_id, then switches to type_id, and group_id in the order. 

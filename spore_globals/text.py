@@ -84,24 +84,22 @@ class Text:
                                        | None = None,
                  placeholder: Text.String16Placeholder | String16 | str | None = None) -> None:
         if isinstance(locale_instance_id, LocaleKey):
-            self._locale: LocaleKey | None = locale_instance_id
-            self._placeholder: (Text.String16Placeholder
-                                | String16
-                                | str
-                                | None) = placeholder_table_id
+            self.locale = locale_instance_id
+            self.placeholder = placeholder_table_id
+        elif isinstance(locale_instance_id, str | String16 | Text.String16Placeholder):
+            self.locale = None
+            self.placeholder = locale_instance_id
         elif (locale_instance_id is None
               and (placeholder_table_id is None
                    or isinstance(placeholder_table_id, (Text.String16Placeholder,
                                                         String16,
                                                         str)))):
-            self._locale = None
-            self._placeholder = (placeholder_table_id if placeholder_table_id is not None
-                                 else placeholder)
+            self.locale = None
+            self.placeholder = (placeholder_table_id if placeholder_table_id is not None
+                                else placeholder)
         else:
-            self._locale = LocaleKey(locale_instance_id, placeholder_table_id)
-            self._placeholder = placeholder
-        if not isinstance(self._placeholder, Text.String16Placeholder):
-            self._placeholder = Text.String16Placeholder(self._placeholder)
+            self.locale = LocaleKey(locale_instance_id, placeholder_table_id)
+            self.placeholder = placeholder
 
     @property
     def locale(self) -> LocaleKey:
@@ -131,4 +129,5 @@ class Text:
             out (str): The formatted locale key and a placeholder text in quotation marks, replacing
                        the original ones with `\\"` everywhere in the string.
         '''
-        return f'({self.locale}) "{str(self.placeholder).replace('"', '\\"')}"'
+        placecolder_stringified: str = str(self.placeholder).replace('"', '\\"')
+        return f'({self.locale}) "{placecolder_stringified}"'

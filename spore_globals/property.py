@@ -10,7 +10,7 @@ from __future__ import annotations
 import struct
 from enum import IntFlag
 from functools import singledispatch
-from typing import BinaryIO
+from typing import BinaryIO, get_args, get_origin
 from fixedint import FixedInt, UInt8, UInt16, UInt32, Int8, Int16, Int32
 from . import bbox
 from . import color
@@ -91,7 +91,7 @@ _TYPE_IDS_LENGTHS: dict[type, _PropertyType] = {
 
     ResourceKey: (_PropertyID(0x20), _PropertySize(4+4+4), False, 4), # instance + type + group
     # 0x21 = flagset
-    Text: (_PropertyID(0x22), _PropertySize(4+4+0x200), False, 0), # locale(i + t) + placeholder
+    Text: (_PropertyID(0x22), _PropertySize(4+4+0x100), False, 0), # locale(i + t) + placeholder
 
     Vector2: (_PropertyID(0x30), _PropertySize(4+4), False, 8), # x + y
     Vector3: (_PropertyID(0x31), _PropertySize(4+4+4), False, 4), # x + y + z
@@ -105,6 +105,8 @@ _TYPE_IDS_LENGTHS: dict[type, _PropertyType] = {
     BoundingBox: (_PropertyID(0x39), _PropertySize((4+4+4)+(4+4+4)), False, 0), # lower + upper
 }
 
+_IDS_TYPES: dict[int, type] = {int(k[0]): t for t, k in _TYPE_IDS_LENGTHS.items()}
+
 class PropertyFlags(IntFlag):
     '''An enum with property flags. There are more (`EA::Variant::eFlags`), but those are unused.'''
     NORMAL = 0
@@ -117,6 +119,9 @@ class PropertyFlags(IntFlag):
     _POINTER_PTR = 64
 
     ARRAY = _C_ARRAY | _RAW_POINTER
+
+
+
 
 @singledispatch
 def write(writable: Property, io: BinaryIO, big_endian: bool = False) -> None:
@@ -311,3 +316,208 @@ def serialize(property_list: PropertyList, io: BinaryIO) -> None:
         else:
             write(value, io, property_type[2])
             io.write(bytes(property_type[3]))
+
+
+
+
+@singledispatch
+def _read(property_type: type, io: BinaryIO, big_endian: bool = False) -> Property:
+    raise TypeError(f'{property_type.__name__} is not a deserializable Spore property.')
+
+def read(property_type: type, io: BinaryIO, big_endian: bool = False) -> Property:
+    '''Reads Spore property object (UInt8/16/32, Int8/16/32, float, bool, ColorRGB(A), String8/16,
+    Char8/16, ResourceKey, Vector2/3/4, list[Text, Transform, BoundingBox + everything from above]).
+ 
+    Arguments:
+        property_type (type): The type of the property to read.
+        io (BinaryIO): The stream to read from.
+        big_endian (bool): Should use big endian instead of litte. Default: False.
+ 
+    Returns:
+        out (object): The property object of the desired type.
+ 
+    Raises:
+        TypeError: If the type can't be deserialized as a Spore property, or if property_type is set
+                   to list with no explicit type specifying.
+        EOFError: If the stream ended unexpectedly.
+    '''
+    return _read.dispatch(get_origin(property_type) or property_type)(property_type, io, big_endian)
+
+def _read_exact(io: BinaryIO, size: int) -> bytes:
+    '''Reads exactly n bytes.
+ 
+    Arguments:
+        io (BinaryIO): The stream to read from.
+        size (int): The amount of bytes to read.
+ 
+    Returns:
+        out (bytes): The bytes read.
+ 
+    Raises:
+        EOFError: If the stream ended before.
+    '''
+    data: bytes = io.read(size)
+    if len(data) != size:
+        raise EOFError(f'Expected {size} bytes, got {len(data)}.')
+    return data
+
+def _decode(property_type: type[String8 | String16],
+            data: bytes,
+            big_endian: bool = False) -> String8 | String16:
+    '''Decodes a string with a possible endianness change.
+ 
+    Arguments:
+        property_type (type): The string type (String8 | String16).
+        data (bytes): The bytes to decode.
+        big_endian (bool): Should use big endian instead of litte. Default: False.
+ 
+    Returns:
+        out (object): The decoded string.
+    '''
+    encoding: str = property_type().encoding
+    if big_endian:
+        #TODO: maybe in a better way
+        encoding = encoding.replace('-le', '-be')
+    return property_type(data.decode(encoding))
+
+# ints
+@_read.register(FixedInt)
+def _(property_type: type[FixedInt], io: BinaryIO, big_endian: bool = False) -> FixedInt:
+    return property_type(int.from_bytes(_read_exact(io, property_type.width//8),
+                                        'little' if not big_endian else 'big'))
+# bool
+@_read.register(bool)
+def _(property_type: type[bool], io: BinaryIO, big_endian: bool = False) -> bool:
+    return _read_exact(io, 1) != b'\0'
+# float
+@_read.register(float)
+def _(property_type: type[float], io: BinaryIO, big_endian: bool = False) -> float:
+    return struct.unpack('<f' if not big_endian else '>f', _read_exact(io, 4))[0]
+    #TODO: double??? for some reason smfx supports those in proplists
+# char
+@_read.register(Char8 | Char16)
+def _(property_type: type[Char8 | Char16],
+      io: BinaryIO,
+      big_endian: bool = False) -> Char8 | Char16:
+    return _decode(property_type, _read_exact(io, property_type.width//8), big_endian)
+# string
+@_read.register(String8 | String16)
+def _(property_type: type[String8 | String16],
+      io: BinaryIO,
+      big_endian: bool = False) -> String8 | String16:
+    length: UInt32 = read(UInt32, io, True)
+    return _decode(property_type,
+                   _read_exact(io, property_type.width//8 * int(length)),
+                   big_endian)
+# locale key
+@_read.register(LocaleKey)
+def _(property_type: type[LocaleKey], io: BinaryIO, big_endian: bool = False) -> LocaleKey:
+    instance_id: UInt32 = read(UInt32, io, big_endian)
+    table_id: UInt32 = read(UInt32, io, big_endian)
+    return LocaleKey(instance_id, table_id)
+# resource key
+@_read.register(ResourceKey)
+def _(property_type: type[ResourceKey], io: BinaryIO, big_endian: bool = False) -> ResourceKey:
+    instance_id: UInt32 = read(UInt32, io, big_endian)
+    type_id: UInt32 = read(UInt32, io, big_endian)
+    group_id: UInt32 = read(UInt32, io, big_endian)
+    return ResourceKey(instance_id, type_id, group_id)
+# text
+@_read.register(Text)
+def _(property_type: type[Text], io: BinaryIO, big_endian: bool = False) -> Text:
+    out: Text = Text(read(LocaleKey, io, big_endian))
+    out.placeholder.data[:] = _read_exact(io, 0x100)
+    return out
+# color
+@_read.register(ColorRGB | ColorRGBA)
+def _(property_type: type[ColorRGB | ColorRGBA],
+      io: BinaryIO,
+      big_endian: bool = False) -> ColorRGB | ColorRGBA:
+    r: float = read(float, io, big_endian)
+    g: float = read(float, io, big_endian)
+    b: float = read(float, io, big_endian)
+    if issubclass(property_type, ColorRGBA):
+        a: float = read(float, io, big_endian)
+        return property_type(r, g, b, a)
+    return property_type(r, g, b)
+# vector
+@_read.register(Vector2 | Vector3 | Vector4)
+def _(property_type: type[Vector2 | Vector3 | Vector4],
+      io: BinaryIO,
+      big_endian: bool = False) -> Vector2 | Vector3 | Vector4:
+    x: float = read(float, io, big_endian)
+    y: float = read(float, io, big_endian)
+    if not issubclass(property_type, Vector3 | Vector4):
+        return property_type(x, y)
+    z: float = read(float, io, big_endian)
+    if not issubclass(property_type, Vector4):
+        return property_type(x, y, z)
+    w: float = read(float, io, big_endian)
+    return property_type(x, y, z, w)
+# bbox
+@_read.register(BoundingBox)
+def _(property_type: type[BoundingBox], io: BinaryIO, big_endian: bool = False) -> BoundingBox:
+    lower: Vector3 = read(Vector3, io, big_endian)
+    upper: Vector3 = read(Vector3, io, big_endian)
+    return BoundingBox(lower, upper)
+# transform
+@_read.register(Transform)
+def _(property_type: type[Transform], io: BinaryIO, big_endian: bool = False) -> Transform:
+    # pylint: disable=protected-access
+    out: Transform = Transform()
+    flags: UInt16 = read(UInt16, io, big_endian)
+    transform_count: UInt16 = read(UInt16, io, big_endian)
+    out.offset = read(Vector3, io, big_endian)
+    out.scale = read(float, io, big_endian)
+    out.rotation.m = [[read(float, io, big_endian) for _ in range(3)] for _ in range(3)]
+
+    out._flags = flags
+    out._transform_count = transform_count
+    return out
+# arrays
+@_read.register(list)
+def _(property_type: type[list], io: BinaryIO, big_endian: bool = False) -> list:
+    types: tuple = get_args(property_type)
+    if len(types) != 1:
+        raise TypeError('List item type must be given, e.g. list[UInt32].')
+    array_property_type: type = types[0]
+    _validate_type(array_property_type)
+    count: UInt32 = read(UInt32, io, True)
+    _property_size: UInt32 = read(UInt32, io, True) #TODO: compare with the dict?
+    return [read(array_property_type, io, big_endian) for _ in range(int(count))]
+
+def deserialize(io: BinaryIO) -> PropertyList:
+    '''Deserializes a property list (.prop) of Spore from a binary IO.
+
+    Arguments:
+        io (BinaryIO): The stream to read from.
+
+    Returns:
+        out (PropertyList): The deserialized property list (dict[UInt32, Property]).
+
+    Raises:
+        TypeError: If an unknown property type ID is found (may happen to other Spark games even if
+                   the .prop file is valid).
+        EOFError: If the stream ended unexpectedly.
+    '''
+    property_list: PropertyList = {}
+    first_byte: bytes = io.read(1)
+    if not first_byte:
+        #may happen to empty streams, those proplists aren't invalid in theory. just empty.
+        return property_list
+    property_count: UInt32 = UInt32(int.from_bytes(first_byte + _read_exact(io, 3), 'big'))
+    for _ in range(property_count):
+        property_id: UInt32 = read(UInt32, io, True)
+        type_id: UInt16 = read(UInt16, io, True)
+        flags: PropertyFlags = PropertyFlags(read(UInt16, io, True))
+        try:
+            value_type: type = _IDS_TYPES[type_id]
+        except KeyError:
+            raise TypeError(f'Unknown or unsupported property type ID: 0x{type_id:x}.') from None
+        property_type: _PropertyType = _TYPE_IDS_LENGTHS[value_type]
+        if (flags & PropertyFlags.ARRAY) == PropertyFlags.ARRAY: #smfx checks for ==, not (&) ==
+            property_list[property_id] = read(list[value_type], io, property_type[2])
+        else:
+            property_list[property_id] = read(value_type, io, property_type[2])
+            _read_exact(io, property_type[3])
+    return property_list

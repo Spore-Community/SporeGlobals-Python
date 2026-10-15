@@ -103,6 +103,7 @@ class Transform:
         r: Matrix3 = self.rotation
         out: Matrix4 = Matrix4()
         out.m = [[r[i][j] * s for j in range(3)] + [0] for i in range(3)] + [[o.x, o.y, o.z, 1.0]]
+        return out
 
     def invert(self) -> Transform:
         '''Inverts this transform to do the opposite transformation.

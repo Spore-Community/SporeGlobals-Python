@@ -59,6 +59,14 @@ class LocaleKey:
             return NotImplemented
         return self.instance_id == other.instance_id and self.table_id == other.table_id
 
+    def __hash__(self) -> int:
+        '''Gets the hash of the locale key.
+        
+        Returns:
+            out (int): The hash of the key.
+        '''
+        return hash((self.instance_id, self.table_id))
+
     def __lt__(self, other: object) -> bool:
         '''Compares two locale keys for the first to be less than another.
         Starts to check with instance_id, then switches to table_id. 
