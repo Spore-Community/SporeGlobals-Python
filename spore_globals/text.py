@@ -7,7 +7,7 @@ from __future__ import annotations
 
 
 
-from typing import overload
+from typing import Final, overload
 from fixedint import UInt32
 from .locale_key import LocaleKey
 from .string import String16
@@ -32,6 +32,8 @@ class Text:
             data (bytearray): The 256-byte array that is used to store 2-byte wide characters.
             value (String16): The stringified contents of a bytearray.
         '''
+        SIZE: Final[int] = 0x100
+
         def __init__(self, value: String16 | str | None = None) -> None:
             self._data: bytearray = bytearray()
             self.value = value
@@ -49,13 +51,14 @@ class Text:
         @value.setter
         def value(self, value_modified: String16 | str | None) -> None:
             if value_modified is None:
-                self._data[:] = bytes(256)
+                self._data[:] = bytes(Text.String16Placeholder.SIZE)
                 return
             string: String16 = String16(value_modified)
             string_bytes: bytes = str(string).encode(string.encoding)
-            if len(string_bytes) > 256:
-                raise ValueError(f'String is too long: {len(string_bytes) // 2} char16s > 128.')
-            self.data[:] = string_bytes.ljust(256, b'\0')
+            if len(string_bytes) > Text.String16Placeholder.SIZE:
+                raise ValueError(f'String is too long: {len(string_bytes) // 2} char16s > '
+                                 + f'{Text.String16Placeholder.SIZE // 2}.')
+            self.data[:] = string_bytes.ljust(Text.String16Placeholder.SIZE, b'\0')
 
         def __str__(self) -> str:
             '''Gets the string, same as value.

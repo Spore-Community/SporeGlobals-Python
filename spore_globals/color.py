@@ -7,7 +7,7 @@ from __future__ import annotations
 
 
 
-from typing import Callable, overload
+from typing import overload
 from fixedint import UInt8, UInt32
 
 
@@ -38,61 +38,84 @@ class Color:
             self.value = value_r
         else:
             self._value: UInt32 = UInt32(
-                Color.BYTESHIFT_SET(a, 3)
-                | Color.BYTESHIFT_SET(value_r, 2)
-                | Color.BYTESHIFT_SET(g, 1)
-                | Color.BYTESHIFT_SET(b, 0)
+                Color._set_byteshift(UInt8(a if a is not None else UInt8.maxval), 3)
+                | Color._set_byteshift(UInt8(value_r), 2)
+                | Color._set_byteshift(UInt8(g), 1)
+                | Color._set_byteshift(UInt8(b), 0)
             )
 
-    BYTESHIFT_GET: Callable[[int, int], int] = lambda value, shift: (value >> shift*8) & 0xff
-    BYTESHIFT_SET: Callable[[int, int], int] = lambda value, shift: (value & 0xff) << shift*8
+    @staticmethod
+    def _get_byteshift(value: UInt32, shift: int) -> UInt8:
+        '''Gets a color channel value by a byteshift.
+        
+        Arguments:
+            value (UInt32): The initial ARGB color value.
+            shift (int): The amount of bytes to shift.
+        
+        Returns:
+            out (UInt8): The result color channel value.
+        '''
+        return UInt8(value >> shift*8)
+
+    @staticmethod
+    def _set_byteshift(value: UInt8, shift: int) -> UInt32:
+        '''Sets a color channel value by a byteshift.
+        
+        Arguments:
+            value (UInt32): The initial color channel value.
+            shift (int): The amount of bytes to shift.
+        
+        Returns:
+            out (UInt8): The result ARGB color value.
+        '''
+        return UInt32(int(value) << shift*8)
 
     @property
     def a(self) -> UInt8:
         '''The alpha value.'''
-        return UInt8(Color.BYTESHIFT_GET(self.value, 3))
+        return UInt8(Color._get_byteshift(self.value, 3))
     @a.setter
-    def a(self, a_modified: UInt8 | None) -> None:
-        if a_modified is None:
-            a_modified = 0
-        self.value = UInt32((self.value & 0x00ffffff) | Color.BYTESHIFT_SET(a_modified, 3))
+    def a(self, a_modified: UInt8 | int | None) -> None:
+        if not isinstance(a_modified, UInt8):
+            a_modified = UInt8(a_modified if a_modified is not None else 0)
+        self.value = UInt32((self.value & 0x00ffffff) | Color._set_byteshift(a_modified, 3))
 
     @property
     def r(self) -> UInt8:
         '''The red color value.'''
-        return UInt8(Color.BYTESHIFT_GET(self.value, 2))
+        return UInt8(Color._get_byteshift(self.value, 2))
     @r.setter
-    def r(self, r_modified: UInt8 | None) -> None:
-        if r_modified is None:
-            r_modified = 0
-        self.value = UInt32((self.value & 0xff00ffff) | Color.BYTESHIFT_SET(r_modified, 2))
+    def r(self, r_modified: UInt8 | int | None) -> None:
+        if not isinstance(r_modified, UInt8):
+            r_modified = UInt8(r_modified if r_modified is not None else 0)
+        self.value = UInt32((self.value & 0xff00ffff) | Color._set_byteshift(r_modified, 2))
 
     @property
     def g(self) -> UInt8:
         '''The green color value.'''
-        return UInt8(Color.BYTESHIFT_GET(self.value, 1))
+        return UInt8(Color._get_byteshift(self.value, 1))
     @g.setter
-    def g(self, g_modified: UInt8 | None) -> None:
-        if g_modified is None:
-            g_modified = 0
-        self.value = UInt32((self.value & 0xffff00ff) | Color.BYTESHIFT_SET(g_modified, 1))
+    def g(self, g_modified: UInt8 | int | None) -> None:
+        if not isinstance(g_modified, UInt8):
+            g_modified = UInt8(g_modified if g_modified is not None else 0)
+        self.value = UInt32((self.value & 0xffff00ff) | Color._set_byteshift(g_modified, 1))
 
     @property
     def b(self) -> UInt8:
         '''The blue color value.'''
-        return UInt8(Color.BYTESHIFT_GET(self.value, 0))
+        return UInt8(Color._get_byteshift(self.value, 0))
     @b.setter
-    def b(self, b_modified: UInt8 | None) -> None:
-        if b_modified is None:
-            b_modified = 0
-        self.value = UInt32((self.value & 0xffffff00) | Color.BYTESHIFT_SET(b_modified, 0))
+    def b(self, b_modified: UInt8 | int | None) -> None:
+        if not isinstance(b_modified, UInt8):
+            b_modified = UInt8(b_modified if b_modified is not None else 0)
+        self.value = UInt32((self.value & 0xffffff00) | b_modified)
 
     @property
     def value(self) -> UInt32:
         '''The ARGB color value.'''
         return self._value
     @value.setter
-    def value(self, value_modified: UInt32 | None) -> None:
+    def value(self, value_modified: UInt32 | int | None) -> None:
         self._value = UInt32(value_modified if value_modified is not None else 0)
 
     def __eq__(self, other: object) -> bool:
@@ -161,6 +184,20 @@ Color.BLACK = Color(0, 0, 0, 255)
 
 
 
+def _float_to_byte(value: float) -> UInt8:
+    '''Converts a 0.0-1.0 floating point value to a 0-255 byte with clamping.
+    
+    Arguments:
+        value (float): The value to convert.
+    
+    Returns:
+        out (UInt8): The resulting byte.
+    '''
+    return UInt8(round(max(0, min(value, 1.0)) * UInt8.maxval))
+
+
+
+
 class ColorRGB:
     '''A class that represents Spore RGB float colors.
 
@@ -183,9 +220,9 @@ class ColorRGB:
                  g: float | None = None,
                  b: float | None = None) -> None:
         if isinstance(r_color, Color):
-            self.r = r_color.r / 0xff
-            self.g = r_color.g / 0xff
-            self.b = r_color.b / 0xff
+            self.r = r_color.r / UInt8.maxval
+            self.g = r_color.g / UInt8.maxval
+            self.b = r_color.b / UInt8.maxval
         else:
             self.r = r_color
             self.g = g
@@ -217,7 +254,10 @@ class ColorRGB:
 
     def to_int_color(self) -> Color:
         '''Converts to the 8-bit ARGB color.'''
-        return Color(round(self.r * 0xff), round(self.g * 0xff), round(self.b * 0xff), 0xff)
+        return Color(_float_to_byte(self.r),
+                     _float_to_byte(self.g),
+                     _float_to_byte(self.b),
+                     UInt8.maxval)
 
     def __str__(self) -> str:
         '''Gets a stringified RGB color.
@@ -274,7 +314,7 @@ class ColorRGBA(ColorRGB):
                  a: float | None = None) -> None:
         if isinstance(r_color, Color):
             super().__init__(r_color)
-            self.a = r_color.a / 0xff
+            self.a = r_color.a / UInt8.maxval
         elif isinstance(r_color, ColorRGB):
             super().__init__(r_color.r, r_color.g, r_color.b)
             self.a = g_a
@@ -291,9 +331,11 @@ class ColorRGBA(ColorRGB):
         self._a: float = float(a_modified) if a_modified is not None else 0
 
     def to_int_color(self) -> Color:
-        color: Color = super().to_int_color()
-        color.a = round(self.a * 0xff)
-        return color
+        '''Converts to the 8-bit ARGB color.'''
+        return Color(_float_to_byte(self.r),
+                     _float_to_byte(self.g),
+                     _float_to_byte(self.b),
+                     _float_to_byte(self.a))
 
     def __str__(self) -> str:
         '''Gets a stringified RGBA color.

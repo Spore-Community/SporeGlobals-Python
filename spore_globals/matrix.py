@@ -180,9 +180,9 @@ class Matrix3:
         cz: float = (1.0 - c) * axis.z
         out: Matrix3 = Matrix3()
         out.m = [
-            axis.x*cx + c, axis.x*cy - axis.z*s, axis.x*cz + axis.y*s,
-            axis.y*cx + axis.z*s, axis.y*cy + c, axis.y*cz - axis.x*s,
-            axis.z*cx - axis.y*s, axis.z*cy + axis.x*s, axis.z*cz + c
+            [axis.x*cx + c, axis.x*cy - axis.z*s, axis.x*cz + axis.y*s],
+            [axis.y*cx + axis.z*s, axis.y*cy + c, axis.y*cz - axis.x*s],
+            [axis.z*cx - axis.y*s, axis.z*cy + axis.x*s, axis.z*cz + c]
         ]
         return out
 

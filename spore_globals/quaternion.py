@@ -40,8 +40,7 @@ class Quaternion(Vector4):
                  w: float | None = None) -> None:
         if x is None and y is None and z is None and w is None:
             x, y, z, w = 0, 0, 0, 1
-        else:
-            super().__init__(x, y, z, w)
+        super().__init__(x, y, z, w)
 
     def inverse(self) -> Quaternion:
         '''Gets the inverse to this quaternion.
@@ -70,13 +69,13 @@ class Quaternion(Vector4):
         xy: float = self.x * self.y
         zw: float = self.z * self.w
         xz: float = self.x * self.z
-        zw: float = self.y * self.w
+        yw: float = self.y * self.w
         yz: float = self.y * self.z
         xw: float = self.x * self.w
         out.m = [
-            [(sqx - sqy - sqz + sqw) * invs, 2.0 * (xy - zw) * invs, 2.0 * (xz - zw) * invs],
+            [(sqx - sqy - sqz + sqw) * invs, 2.0 * (xy - zw) * invs, 2.0 * (xz - yw) * invs],
             [2.0 * (xy + zw) * invs, (-sqx + sqy - sqz + sqw) * invs, 2.0 * (yz - xw) * invs],
-            [2.0 * (xz + zw) * invs, 2.0 * (yz + xw) * invs, (-sqx - sqy + sqz + sqw) * invs]
+            [2.0 * (xz + yw) * invs, 2.0 * (yz + xw) * invs, (-sqx - sqy + sqz + sqw) * invs]
         ]
         return out
 
@@ -137,10 +136,10 @@ class Quaternion(Vector4):
         sp: float = sin(half_angles.y)
         cr: float = cos(half_angles.x)
         sr: float = sin(half_angles.x)
-        return Quaternion(cy*cp*cr + sy*sp*sr,
-                          cy*cp*sr - sy*sp*cr,
+        return Quaternion(cy*cp*sr - sy*sp*cr,
                           sy*cp*sr + cy*sp*cr,
-                          sy*cp*cr - cy*sp*sr)
+                          sy*cp*cr - cy*sp*sr,
+                          cy*cp*cr + sy*sp*sr)
 
     @staticmethod
     def get_rotation_to(vector_from: Vector3,

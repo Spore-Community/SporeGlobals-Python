@@ -6,13 +6,15 @@
 
 
 from datetime import datetime, timezone
+from typing import Final
 
 
 
 
 class Timestamp(int):
-    UNIX_Y1_DELTA: int = -62135683200
-    UNIX_INSTANCE_ID_DELTA: int = 1104534000 # year 2005, US/Pacific
+    '''A class that represents a simple UTC timestamp that can be converted to Spore timestamps.'''
+    UNIX_Y1_DELTA: Final[int] = -62135683200
+    UNIX_INSTANCE_ID_DELTA: Final[int] = 1104534000 # year 2005, US/Pacific
 
     @staticmethod
     def _get_timestamp() -> int:

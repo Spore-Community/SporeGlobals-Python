@@ -91,7 +91,7 @@ _TYPE_IDS_LENGTHS: dict[type, _PropertyType] = {
 
     ResourceKey: (_PropertyID(0x20), _PropertySize(4+4+4), False, 4), # instance + type + group
     # 0x21 = flagset
-    Text: (_PropertyID(0x22), _PropertySize(4+4+0x100), False, 0), # locale(i + t) + placeholder
+    Text: (_PropertyID(0x22), _PropertySize(4+4+Text.String16Placeholder.SIZE), False, 0), # (i+t)+p
 
     Vector2: (_PropertyID(0x30), _PropertySize(4+4), False, 8), # x + y
     Vector3: (_PropertyID(0x31), _PropertySize(4+4+4), False, 4), # x + y + z

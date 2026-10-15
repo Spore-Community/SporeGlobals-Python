@@ -8,7 +8,7 @@ from __future__ import annotations
 
 
 from math import acos, sqrt, pi
-from typing import overload, TYPE_CHECKING
+from typing import Final, overload, TYPE_CHECKING
 if TYPE_CHECKING:
     from .point import Point
 
@@ -798,9 +798,9 @@ class Vector3:
 
 Vector3.ZERO = Vector3()
 
-X_AXIS: Vector3 = Vector3(1, 0, 0)
-Y_AXIS: Vector3 = Vector3(0, 1, 0)
-Z_AXIS: Vector3 = Vector3(0, 0, 1)
+X_AXIS: Final[Vector3] = Vector3(1, 0, 0)
+Y_AXIS: Final[Vector3] = Vector3(0, 1, 0)
+Z_AXIS: Final[Vector3] = Vector3(0, 0, 1)
 
 
 

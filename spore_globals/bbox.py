@@ -117,17 +117,17 @@ class BoundingBox:
             dst = BoundingBox()
         dst.lower.x = max(self.lower.x, other.lower.x)
         dst.upper.x = min(self.upper.x, other.upper.x)
-        if dst.lower.x >= dst.upper.x:
+        if dst.lower.x > dst.upper.x:
             return False
 
         dst.lower.y = max(self.lower.y, other.lower.y)
         dst.upper.y = min(self.upper.y, other.upper.y)
-        if dst.lower.y >= dst.upper.y:
+        if dst.lower.y > dst.upper.y:
             return False
 
         dst.lower.z = max(self.lower.z, other.lower.z)
         dst.upper.z = min(self.upper.z, other.upper.z)
-        return dst.lower.z < dst.upper.z
+        return dst.lower.z <= dst.upper.z
 
     def __str__(self) -> str:
         '''Gets a stringified bounding box.
