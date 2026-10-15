@@ -293,24 +293,27 @@ def serialize(property_list: PropertyList, io: BinaryIO) -> None:
         property_list (PropertyList): The property list (dict[UInt32, Property]) to serialize.
         io (BinaryIO): The stream to write into.
     '''
-    if not property_list:
-        return
-    write(UInt32(len(property_list)), io, True)
+    properties_to_write: list[tuple[UInt32, Property, _PropertyType, bool]] = []
+    property_id: UInt32
+    value: Property
+    result: bool
+    property_type: _PropertyType
     for property_id, value in sorted(property_list.items()):
-        flags: PropertyFlags = PropertyFlags.NORMAL
-        property_type: _PropertyType
-        is_list: bool = isinstance(value, list)
-        if is_list:
-            result: tuple[bool, _PropertyType | None] = _validate_array(value)
-            if not result[0]:
+        if isinstance(value, list):
+            result, property_type = _validate_array(value)
+            if not result:
                 continue
-            property_type = result[1]
-            flags = PropertyFlags.ARRAY
+            properties_to_write.append((property_id, value, property_type, True))
         else:
-            property_type = _validate_type(type(value))
+            properties_to_write.append((property_id, value, _validate_type(type(value)), False))
+    if not properties_to_write:
+        return
+    write(UInt32(len(properties_to_write)), io, True)
+    is_list: bool
+    for property_id, value, property_type, is_list in properties_to_write:
         write(UInt32(property_id), io, True)
         write(property_type[0], io, True)
-        write(UInt16(flags), io, True)
+        write(UInt16(PropertyFlags.ARRAY if is_list else PropertyFlags.NORMAL), io, True)
         if is_list:
             _write_list(value, io, property_type[2], property_type)
         else:
