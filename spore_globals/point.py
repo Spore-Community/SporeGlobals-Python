@@ -44,7 +44,7 @@ class Point:
         return self._x
     @x.setter
     def x(self, x_modified: float | None) -> None:
-        self._x: float = x_modified if x_modified is not None else 0
+        self._x: float = float(x_modified) if x_modified is not None else 0
 
     @property
     def y(self) -> float:
@@ -52,7 +52,7 @@ class Point:
         return self._y
     @y.setter
     def y(self, y_modified: float | None) -> None:
-        self._y: float = y_modified if y_modified is not None else 0
+        self._y: float = float(y_modified) if y_modified is not None else 0
 
     def __str__(self) -> str:
         '''Gets a stringified 2D point.
@@ -103,7 +103,7 @@ class Point:
         '''
         if isinstance(other, Point):
             return Point(self.x + other.x, self.y + other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Point(self.x + other, self.y + other)
         return NotImplemented
 
@@ -131,7 +131,7 @@ class Point:
         '''
         if isinstance(other, Point):
             return Point(self.x - other.x, self.y - other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Point(self.x - other, self.y - other)
         return NotImplemented
 
@@ -159,7 +159,7 @@ class Point:
         '''
         if isinstance(other, Point):
             return Point(self.x * other.x, self.y * other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Point(self.x * other, self.y * other)
         return NotImplemented
 
@@ -187,7 +187,7 @@ class Point:
         '''
         if isinstance(other, Point):
             return Point(self.x / other.x, self.y / other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Point(self.x / other, self.y / other)
         return NotImplemented
 
@@ -211,7 +211,7 @@ class Point:
             self.x += other.x
             self.y += other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x += other
             self.y += other
             return self
@@ -237,7 +237,7 @@ class Point:
             self.x -= other.x
             self.y -= other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x -= other
             self.y -= other
             return self
@@ -263,7 +263,7 @@ class Point:
             self.x *= other.x
             self.y *= other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x *= other
             self.y *= other
             return self
@@ -289,7 +289,7 @@ class Point:
             self.x /= other.x
             self.y /= other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x /= other
             self.y /= other
             return self
@@ -305,7 +305,7 @@ class Point:
         Arguments:
             other (float): The floating point value.
         '''
-        if not isinstance(other, (float, int)):
+        if not isinstance(other, float | int):
             return NotImplemented
         return Point(other - self.x, other - self.y)
 
@@ -315,7 +315,6 @@ class Point:
         Arguments:
             other (float): The floating point value.
         '''
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Point(other / self.x, other / self.y)
         return NotImplemented
-    

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from enum import IntFlag
 from typing import Self
+from fixedint import UInt16
 from .matrix import Matrix3, Matrix4
 from .quaternion import Quaternion
 from .vector import Vector3
@@ -32,8 +33,10 @@ class Transform:
         OFFSET = 4
 
     def __init__(self):
-        self._flags: int = 0
-        self._transform_count: int = 0
+        # both of these are int16_ts in ModAPI, but Feb2008 symbols show that they are, in fact,
+        # unsigned.
+        self._flags: UInt16 = UInt16()
+        self._transform_count: UInt16 = UInt16()
         self._offset: Vector3 = Vector3()
         self._scale: float = 1.0
         self._rotation: Matrix3 = Matrix3().set_identity()
@@ -63,7 +66,7 @@ class Transform:
             self._scale = 1.0
             self._flags &= ~Transform.TransformFlags.SCALE
         else:
-            self._scale = scale_modified
+            self._scale = float(scale_modified)
             self._flags |= Transform.TransformFlags.SCALE
 
     @property
@@ -135,7 +138,7 @@ class Transform:
             for i in range(3)
         ]
         self.scale *= other.scale
-        self._flags |= other.flags
+        self._flags |= other._flags # pylint: disable=protected-access
         self._transform_count += 1
         return self
 

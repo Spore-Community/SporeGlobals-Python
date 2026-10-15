@@ -233,7 +233,7 @@ class Quaternion(Vector4):
                               self.y + other.y,
                               self.z + other.z,
                               self.w + other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Quaternion(self.x + other,
                               self.y + other,
                               self.z + other,
@@ -267,7 +267,7 @@ class Quaternion(Vector4):
                               self.y - other.y,
                               self.z - other.z,
                               self.w - other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Quaternion(self.x - other,
                               self.y - other,
                               self.z - other,
@@ -306,7 +306,7 @@ class Quaternion(Vector4):
                               self.y * other.y,
                               self.z * other.z,
                               self.w * other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Quaternion(self.x * other,
                               self.y * other,
                               self.z * other,
@@ -340,7 +340,7 @@ class Quaternion(Vector4):
                               self.y / other.y,
                               self.z / other.z,
                               self.w / other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Quaternion(self.x / other,
                               self.y / other,
                               self.z / other,
@@ -369,7 +369,7 @@ class Quaternion(Vector4):
             self.z += other.z
             self.w += other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x += other
             self.y += other
             self.z += other
@@ -399,7 +399,7 @@ class Quaternion(Vector4):
             self.z -= other.z
             self.w -= other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x -= other
             self.y -= other
             self.z -= other
@@ -429,7 +429,7 @@ class Quaternion(Vector4):
             self.z *= other.z
             self.w *= other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x *= other
             self.y *= other
             self.z *= other
@@ -459,7 +459,7 @@ class Quaternion(Vector4):
             self.z /= other.z
             self.w /= other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x /= other
             self.y /= other
             self.z /= other
@@ -477,7 +477,7 @@ class Quaternion(Vector4):
         Arguments:
             other (float): The floating point value.
         '''
-        if not isinstance(other, (float, int)):
+        if not isinstance(other, float | int):
             return NotImplemented
         return Quaternion(other - self.x, other - self.y, other - self.z, other - self.w)
 
@@ -487,6 +487,6 @@ class Quaternion(Vector4):
         Arguments:
             other (float): The floating point value.
         '''
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Quaternion(other / self.x, other / self.y, other / self.z, other / self.w)
         return NotImplemented

@@ -46,7 +46,7 @@ class Vector2:
         return self._x
     @x.setter
     def x(self, x_modified: float | None) -> None:
-        self._x: float = x_modified if x_modified is not None else 0
+        self._x: float = float(x_modified) if x_modified is not None else 0
 
     @property
     def y(self) -> float:
@@ -54,7 +54,7 @@ class Vector2:
         return self._y
     @y.setter
     def y(self, y_modified: float | None) -> None:
-        self._y: float = y_modified if y_modified is not None else 0
+        self._y: float = float(y_modified) if y_modified is not None else 0
 
     def length(self) -> float:
         '''Calculates the length of the vector, calculated as the square root of the sum of its
@@ -149,7 +149,7 @@ class Vector2:
         '''
         if isinstance(other, Vector2):
             return Vector2(self.x + other.x, self.y + other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector2(self.x + other, self.y + other)
         return NotImplemented
 
@@ -177,7 +177,7 @@ class Vector2:
         '''
         if isinstance(other, Vector2):
             return Vector2(self.x - other.x, self.y - other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector2(self.x - other, self.y - other)
         return NotImplemented
 
@@ -205,7 +205,7 @@ class Vector2:
         '''
         if isinstance(other, Vector2):
             return Vector2(self.x * other.x, self.y * other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector2(self.x * other, self.y * other)
         return NotImplemented
 
@@ -233,7 +233,7 @@ class Vector2:
         '''
         if isinstance(other, Vector2):
             return Vector2(self.x / other.x, self.y / other.y)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector2(self.x / other, self.y / other)
         return NotImplemented
 
@@ -257,7 +257,7 @@ class Vector2:
             self.x += other.x
             self.y += other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x += other
             self.y += other
             return self
@@ -283,7 +283,7 @@ class Vector2:
             self.x -= other.x
             self.y -= other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x -= other
             self.y -= other
             return self
@@ -309,7 +309,7 @@ class Vector2:
             self.x *= other.x
             self.y *= other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x *= other
             self.y *= other
             return self
@@ -335,7 +335,7 @@ class Vector2:
             self.x /= other.x
             self.y /= other.y
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x /= other
             self.y /= other
             return self
@@ -351,7 +351,7 @@ class Vector2:
         Arguments:
             other (float): The floating point value.
         '''
-        if not isinstance(other, (float, int)):
+        if not isinstance(other, float | int):
             return NotImplemented
         return Vector2(other - self.x, other - self.y)
 
@@ -361,7 +361,7 @@ class Vector2:
         Arguments:
             other (float): The floating point value.
         '''
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector2(other / self.x, other / self.y)
         return NotImplemented
 
@@ -398,7 +398,7 @@ class Vector3:
         return self._x
     @x.setter
     def x(self, x_modified: float | None) -> None:
-        self._x: float = x_modified if x_modified is not None else 0
+        self._x: float = float(x_modified) if x_modified is not None else 0
 
     @property
     def y(self) -> float:
@@ -406,7 +406,7 @@ class Vector3:
         return self._y
     @y.setter
     def y(self, y_modified: float | None) -> None:
-        self._y: float = y_modified if y_modified is not None else 0
+        self._y: float = float(y_modified) if y_modified is not None else 0
 
     @property
     def z(self) -> float:
@@ -414,7 +414,7 @@ class Vector3:
         return self._z
     @z.setter
     def z(self, z_modified: float | None) -> None:
-        self._z: float = z_modified if z_modified is not None else 0
+        self._z: float = float(z_modified) if z_modified is not None else 0
 
     def length(self) -> float:
         '''Calculates the length of the vector, calculated as the square root of the sum of its
@@ -570,7 +570,7 @@ class Vector3:
         '''
         if isinstance(other, Vector3):
             return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector3(self.x + other, self.y + other, self.z + other)
         return NotImplemented
 
@@ -598,7 +598,7 @@ class Vector3:
         '''
         if isinstance(other, Vector3):
             return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector3(self.x - other, self.y - other, self.z - other)
         return NotImplemented
 
@@ -626,7 +626,7 @@ class Vector3:
         '''
         if isinstance(other, Vector3):
             return Vector3(self.x * other.x, self.y * other.y, self.z * other.z)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector3(self.x * other, self.y * other, self.z * other)
         return NotImplemented
 
@@ -654,7 +654,7 @@ class Vector3:
         '''
         if isinstance(other, Vector3):
             return Vector3(self.x / other.x, self.y / other.y, self.z / other.z)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector3(self.x / other, self.y / other, self.z / other)
         return NotImplemented
 
@@ -679,7 +679,7 @@ class Vector3:
             self.y += other.y
             self.z += other.z
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x += other
             self.y += other
             self.z += other
@@ -707,7 +707,7 @@ class Vector3:
             self.y -= other.y
             self.z -= other.z
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x -= other
             self.y -= other
             self.z -= other
@@ -735,7 +735,7 @@ class Vector3:
             self.y *= other.y
             self.z *= other.z
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x *= other
             self.y *= other
             self.z *= other
@@ -763,7 +763,7 @@ class Vector3:
             self.y /= other.y
             self.z /= other.z
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x /= other
             self.y /= other
             self.z /= other
@@ -780,7 +780,7 @@ class Vector3:
         Arguments:
             other (float): The floating point value.
         '''
-        if not isinstance(other, (float, int)):
+        if not isinstance(other, float | int):
             return NotImplemented
         return Vector3(other - self.x, other - self.y, other - self.z)
 
@@ -790,7 +790,7 @@ class Vector3:
         Arguments:
             other (float): The floating point value.
         '''
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector3(other / self.x, other / self.y, other / self.z)
         return NotImplemented
 
@@ -834,7 +834,7 @@ class Vector4:
         return self._x
     @x.setter
     def x(self, x_modified: float | None) -> None:
-        self._x: float = x_modified if x_modified is not None else 0
+        self._x: float = float(x_modified) if x_modified is not None else 0
 
     @property
     def y(self) -> float:
@@ -842,7 +842,7 @@ class Vector4:
         return self._y
     @y.setter
     def y(self, y_modified: float | None) -> None:
-        self._y: float = y_modified if y_modified is not None else 0
+        self._y: float = float(y_modified) if y_modified is not None else 0
 
     @property
     def z(self) -> float:
@@ -850,7 +850,7 @@ class Vector4:
         return self._z
     @z.setter
     def z(self, z_modified: float | None) -> None:
-        self._z: float = z_modified if z_modified is not None else 0
+        self._z: float = float(z_modified) if z_modified is not None else 0
 
     @property
     def w(self) -> float:
@@ -858,7 +858,7 @@ class Vector4:
         return self._w
     @w.setter
     def w(self, w_modified: float | None) -> None:
-        self._w: float = w_modified if w_modified is not None else 0
+        self._w: float = float(w_modified) if w_modified is not None else 0
 
     def length(self) -> float:
         '''Calculates the length of the vector, calculated as the square root of the sum of its
@@ -955,7 +955,7 @@ class Vector4:
         '''
         if isinstance(other, Vector4):
             return Vector4(self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector4(self.x + other, self.y + other, self.z + other, self.w + other)
         return NotImplemented
 
@@ -983,7 +983,7 @@ class Vector4:
         '''
         if isinstance(other, Vector4):
             return Vector4(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector4(self.x - other, self.y - other, self.z - other, self.w - other)
         return NotImplemented
 
@@ -1011,7 +1011,7 @@ class Vector4:
         '''
         if isinstance(other, Vector4):
             return Vector4(self.x * other.x, self.y * other.y, self.z * other.z, self.w * other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector4(self.x * other, self.y * other, self.z * other, self.w * other)
         return NotImplemented
 
@@ -1039,7 +1039,7 @@ class Vector4:
         '''
         if isinstance(other, Vector4):
             return Vector4(self.x / other.x, self.y / other.y, self.z / other.z, self.w / other.w)
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector4(self.x / other, self.y / other, self.z / other, self.w / other)
         return NotImplemented
 
@@ -1065,7 +1065,7 @@ class Vector4:
             self.z += other.z
             self.w += other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x += other
             self.y += other
             self.z += other
@@ -1095,7 +1095,7 @@ class Vector4:
             self.z -= other.z
             self.w -= other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x -= other
             self.y -= other
             self.z -= other
@@ -1125,7 +1125,7 @@ class Vector4:
             self.z *= other.z
             self.w *= other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x *= other
             self.y *= other
             self.z *= other
@@ -1155,7 +1155,7 @@ class Vector4:
             self.z /= other.z
             self.w /= other.w
             return self
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             self.x /= other
             self.y /= other
             self.z /= other
@@ -1173,7 +1173,7 @@ class Vector4:
         Arguments:
             other (float): The floating point value.
         '''
-        if not isinstance(other, (float, int)):
+        if not isinstance(other, float | int):
             return NotImplemented
         return Vector4(other - self.x, other - self.y, other - self.z, other - self.w)
 
@@ -1183,7 +1183,7 @@ class Vector4:
         Arguments:
             other (float): The floating point value.
         '''
-        if isinstance(other, (float, int)):
+        if isinstance(other, float | int):
             return Vector4(other / self.x, other / self.y, other / self.z, other / self.w)
         return NotImplemented
 

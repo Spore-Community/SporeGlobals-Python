@@ -8,6 +8,7 @@ from __future__ import annotations
 
 
 from typing import Callable, overload
+from fixedint import UInt8, UInt32
 
 
 
@@ -16,27 +17,27 @@ class Color:
     '''A class that represents Spore ARGB 8-bit colors.
 
     Attributes:
-        r (int): The red color value (0-255).
-        g (int): The green color value (0-255).
-        b (int): The blue color value (0-255).
-        a (int): The alpha value (0-255).
-        value (int): The ARGB color value (0x00000000-0xffffffff).
+        r (UInt8): The red color value.
+        g (UInt8): The green color value.
+        b (UInt8): The blue color value.
+        a (UInt8): The alpha value.
+        value (UInt32): The ARGB color value.
     '''
     @overload
     def __init__(self) -> None: ...
     @overload
-    def __init__(self, value: int) -> None: ...
+    def __init__(self, value: UInt32 | int) -> None: ...
     @overload
-    def __init__(self, r: int, g: int, b: int, a: int) -> None: ...
+    def __init__(self, r: UInt8 | int, g: UInt8 | int, b: UInt8 | int, a: UInt8 | int) -> None: ...
     def __init__(self,
-                 value_r: int = 0,
-                 g: int | None = None,
-                 b: int | None = None,
-                 a: int | None = None) -> None:
+                 value_r: UInt32 | UInt8 | int = 0,
+                 g: UInt8 | int | None = None,
+                 b: UInt8 | int | None = None,
+                 a: UInt8 | int | None = None) -> None:
         if g is None:
             self.value = value_r
         else:
-            self._value: int = (
+            self._value: UInt32 = UInt32(
                 Color.BYTESHIFT_SET(a, 3)
                 | Color.BYTESHIFT_SET(value_r, 2)
                 | Color.BYTESHIFT_SET(g, 1)
@@ -47,54 +48,52 @@ class Color:
     BYTESHIFT_SET: Callable[[int, int], int] = lambda value, shift: (value & 0xff) << shift*8
 
     @property
-    def a(self) -> int:
-        '''The alpha value (0-255).'''
-        return Color.BYTESHIFT_GET(self.value, 3)
+    def a(self) -> UInt8:
+        '''The alpha value.'''
+        return UInt8(Color.BYTESHIFT_GET(self.value, 3))
     @a.setter
-    def a(self, a_modified: int | None) -> None:
+    def a(self, a_modified: UInt8 | None) -> None:
         if a_modified is None:
             a_modified = 0
-        self.value = (self.value & 0x00ffffff) | Color.BYTESHIFT_SET(a_modified, 3)
+        self.value = UInt32((self.value & 0x00ffffff) | Color.BYTESHIFT_SET(a_modified, 3))
 
     @property
-    def r(self) -> int:
-        '''The red color value (0-255).'''
-        return Color.BYTESHIFT_GET(self.value, 2)
+    def r(self) -> UInt8:
+        '''The red color value.'''
+        return UInt8(Color.BYTESHIFT_GET(self.value, 2))
     @r.setter
-    def r(self, r_modified: int | None) -> None:
+    def r(self, r_modified: UInt8 | None) -> None:
         if r_modified is None:
             r_modified = 0
-        self.value = (self.value & 0xff00ffff) | Color.BYTESHIFT_SET(r_modified, 2)
+        self.value = UInt32((self.value & 0xff00ffff) | Color.BYTESHIFT_SET(r_modified, 2))
 
     @property
-    def g(self) -> int:
-        '''The green color value (0-255).'''
-        return Color.BYTESHIFT_GET(self.value, 1)
+    def g(self) -> UInt8:
+        '''The green color value.'''
+        return UInt8(Color.BYTESHIFT_GET(self.value, 1))
     @g.setter
-    def g(self, g_modified: int | None) -> None:
+    def g(self, g_modified: UInt8 | None) -> None:
         if g_modified is None:
             g_modified = 0
-        self.value = (self.value & 0xffff00ff) | Color.BYTESHIFT_SET(g_modified, 1)
+        self.value = UInt32((self.value & 0xffff00ff) | Color.BYTESHIFT_SET(g_modified, 1))
 
     @property
-    def b(self) -> int:
-        '''The blue color value (0-255).'''
-        return Color.BYTESHIFT_GET(self.value, 0)
+    def b(self) -> UInt8:
+        '''The blue color value.'''
+        return UInt8(Color.BYTESHIFT_GET(self.value, 0))
     @b.setter
-    def b(self, b_modified: int | None) -> None:
+    def b(self, b_modified: UInt8 | None) -> None:
         if b_modified is None:
             b_modified = 0
-        self.value = (self.value & 0xffffff00) | Color.BYTESHIFT_SET(b_modified, 0)
+        self.value = UInt32((self.value & 0xffffff00) | Color.BYTESHIFT_SET(b_modified, 0))
 
     @property
-    def value(self) -> int:
-        '''The ARGB color value (0x00000000-0xffffffff).'''
+    def value(self) -> UInt32:
+        '''The ARGB color value.'''
         return self._value
     @value.setter
-    def value(self, value_modified: int | None) -> None:
-        if value_modified is None:
-            value_modified = 0
-        self._value = value_modified & 0xffffffff
+    def value(self, value_modified: UInt32 | None) -> None:
+        self._value = UInt32(value_modified if value_modified is not None else 0)
 
     def __eq__(self, other: object) -> bool:
         '''Compares two colors for equality.
@@ -198,7 +197,7 @@ class ColorRGB:
         return self._r
     @r.setter
     def r(self, r_modified: float | None) -> None:
-        self._r: float = r_modified if r_modified is not None else 0
+        self._r: float = float(r_modified) if r_modified is not None else 0
 
     @property
     def g(self) -> float:
@@ -206,7 +205,7 @@ class ColorRGB:
         return self._g
     @g.setter
     def g(self, g_modified: float | None) -> None:
-        self._g: float = g_modified if g_modified is not None else 0
+        self._g: float = float(g_modified) if g_modified is not None else 0
 
     @property
     def b(self) -> float:
@@ -214,7 +213,7 @@ class ColorRGB:
         return self._b
     @b.setter
     def b(self, b_modified: float | None) -> None:
-        self._b: float = b_modified if b_modified is not None else 0
+        self._b: float = float(b_modified) if b_modified is not None else 0
 
     def to_int_color(self) -> Color:
         '''Converts to the 8-bit ARGB color.'''
@@ -289,7 +288,7 @@ class ColorRGBA(ColorRGB):
         return self._a
     @a.setter
     def a(self, a_modified: float | None) -> None:
-        self._a: float = a_modified if a_modified is not None else 0
+        self._a: float = float(a_modified) if a_modified is not None else 0
 
     def to_int_color(self) -> Color:
         color: Color = super().to_int_color()

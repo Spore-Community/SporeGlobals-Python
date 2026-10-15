@@ -7,7 +7,7 @@ from __future__ import annotations
 
 
 
-from typing import Callable
+from fixedint import UInt32
 from .timestamp import Timestamp
 
 
@@ -17,16 +17,16 @@ class ResourceKey:
     '''A class that represents Spore resource key.
 
     Attributes:
-        instance_id (int): The instance ID that is used to identify the object
-                           (file/some kind of inode). Generates a new from the current timestamp
-                           if not specified.
-        type_id (int): The type (extension) ID.
-        group_id (int): The group (folder) ID.
+        instance_id (UInt32): The instance ID that is used to identify the object
+                              (file/some kind of inode). Generates a new from the current timestamp
+                              if not specified.
+        type_id (UInt32): The type (extension) ID.
+        group_id (UInt32): The group (folder) ID.
     '''
     def __init__(self,
-                 instance_id: int | None | type = Timestamp,
-                 type_id: int | None = 0,
-                 group_id: int | None = 0) -> None:
+                 instance_id: UInt32 | int | None = Timestamp,
+                 type_id: UInt32 | int | None = None,
+                 group_id: UInt32 | int | None = None) -> None:
         if instance_id is Timestamp:
             self.instance_id = Timestamp().instance_id()
         else:
@@ -34,38 +34,29 @@ class ResourceKey:
         self.type_id = type_id
         self.group_id = group_id
 
-    # for basic syntax compatibility with ModAPI
-    OVERFLOW: Callable[[int], int] = lambda value: value & 0xffffffff
-
     @property
-    def instance_id(self) -> int:
+    def instance_id(self) -> UInt32:
         '''The instance ID that is used to identify the object (file/some kind of inode).'''
         return self._instance_id
     @instance_id.setter
-    def instance_id(self, instance_id_modified: int | None) -> None:
-        if instance_id_modified is None:
-            instance_id_modified = 0
-        self._instance_id = ResourceKey.OVERFLOW(instance_id_modified)
+    def instance_id(self, instance_id_modified: UInt32 | int | None) -> None:
+        self._instance_id = UInt32(instance_id_modified if instance_id_modified is not None else 0)
 
     @property
-    def type_id(self) -> int:
+    def type_id(self) -> UInt32:
         '''The type (extension) ID.'''
         return self._type_id
     @type_id.setter
-    def type_id(self, type_id_modified: int | None) -> None:
-        if type_id_modified is None:
-            type_id_modified = 0
-        self._type_id = ResourceKey.OVERFLOW(type_id_modified)
+    def type_id(self, type_id_modified: UInt32 | int | None) -> None:
+        self._type_id = UInt32(type_id_modified if type_id_modified is not None else 0)
 
     @property
-    def group_id(self) -> int:
+    def group_id(self) -> UInt32:
         '''The group (folder) ID.'''
         return self._group_id
     @group_id.setter
-    def group_id(self, group_id_modified: int | None) -> None:
-        if group_id_modified is None:
-            group_id_modified = 0
-        self._group_id = ResourceKey.OVERFLOW(group_id_modified)
+    def group_id(self, group_id_modified: UInt32 | int | None) -> None:
+        self._group_id = UInt32(group_id_modified if group_id_modified is not None else 0)
 
     def __str__(self) -> str:
         '''Gets a stringified resource key.
@@ -118,33 +109,33 @@ class ResourceKey:
             return NotImplemented
         return other < self
 
-    def with_instance(self, instance_id: int | None) -> ResourceKey:
+    def with_instance(self, instance_id: UInt32 | int | None) -> ResourceKey:
         '''Creates a new resource key with the replaced instance ID.
 
         Arguments:
-            instance_id (int | None): The instance ID to use.
+            instance_id (UInt32 | None): The instance ID to use.
         
         Returns:
             out (ResourceKey): The resource key with the new instance ID.
         '''
         return ResourceKey(instance_id, self.type_id, self.group_id)
 
-    def with_type(self, type_id: int | None) -> ResourceKey:
+    def with_type(self, type_id: UInt32 | int | None) -> ResourceKey:
         '''Creates a new resource key with the replaced type ID.
         
         Arguments:
-            type_id (int | None): The type ID to use.
+            type_id (UInt32 | None): The type ID to use.
         
         Returns:
             out (ResourceKey): The resource key with the new type ID.
         '''
         return ResourceKey(self.instance_id, type_id, self.group_id)
 
-    def with_group(self, group_id: int | None) -> ResourceKey:
+    def with_group(self, group_id: UInt32 | int | None) -> ResourceKey:
         '''Creates a new resource key with the replaced group ID.
         
         Arguments:
-            group_id (int | None): The group ID to use.
+            group_id (UInt32 | None): The group ID to use.
         
         Returns:
             out (ResourceKey): The resource key with the new group ID.
