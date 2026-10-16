@@ -11,34 +11,36 @@ import struct
 from enum import IntFlag
 from functools import singledispatch
 from typing import BinaryIO, get_args, get_origin
+from warnings import warn
 from fixedint import FixedInt, UInt8, UInt16, UInt32, Int8, Int16, Int32
-from . import bbox
-from . import color
-from . import locale_key
-from . import resource_key
-from . import string
-from . import text
-from . import transform
-from . import vector
+from .bbox import BoundingBox
+from .color import ColorRGB, ColorRGBA
+from .locale_key import LocaleKey
+from .resource_key import ResourceKey
+from .string import String8, String16, Char8, Char16
+from .text import Text
+from .transform import Transform
+from .vector import Vector2, Vector3, Vector4
 
 
 
 
 # for * imports
-BoundingBox = bbox.BoundingBox
-ColorRGB = color.ColorRGB
-ColorRGBA = color.ColorRGBA
-LocaleKey = locale_key.LocaleKey
-ResourceKey = resource_key.ResourceKey
-String8 = string.String8
-String16 = string.String16
-Char8 = string.Char8
-Char16 = string.Char16
-Text = text.Text
-Transform = transform.Transform
-Vector2 = vector.Vector2
-Vector3 = vector.Vector3
-Vector4 = vector.Vector4
+__all__ = [
+    'read', 'write',
+    'serialize', 'deserialize', 'UnknownPropertyWarning',
+
+    'Property', 'PropertyList', 'PropertyFlags', # Unsure if anyone actually needs PropertyFlags
+
+    'Int8', 'Int16', 'Int32', 'UInt8', 'UInt16', 'UInt32',
+    'BoundingBox',
+    'ColorRGB', 'ColorRGBA',
+    'LocaleKey', 'ResourceKey',
+    'String8', 'String16', 'Char8', 'Char16',
+    'Text',
+    'Transform',
+    'Vector2', 'Vector3', 'Vector4',
+]
 
 _PropertyBase = (bool
                  | Char8 | Char16
@@ -119,6 +121,12 @@ class PropertyFlags(IntFlag):
     _POINTER_PTR = 64
 
     ARRAY = _C_ARRAY | _RAW_POINTER
+
+class UnknownPropertyWarning(RuntimeWarning):
+    '''Raised if an unknown type property got skipped during prop deserealization.'''
+
+class IncompletePropertyListWarning(UnknownPropertyWarning):
+    '''Raised if an unknown type property led to an early termination of prop deserealization.'''
 
 
 
@@ -492,6 +500,12 @@ def _(property_type: type[list], io: BinaryIO, big_endian: bool = False) -> list
 def deserialize(io: BinaryIO) -> PropertyList:
     '''Deserializes a property list (.prop) of Spore from a binary IO.
 
+
+    You MUST filter (at least) the IncompletePropertyListWarning if the .prop file is coming from
+    an unknown source.
+    (see below)
+    
+
     Arguments:
         io (BinaryIO): The stream to read from.
 
@@ -499,8 +513,13 @@ def deserialize(io: BinaryIO) -> PropertyList:
         out (PropertyList): The deserialized property list (dict[UInt32, Property]).
 
     Raises:
-        TypeError: If an unknown property type ID is found (may happen to other Spark games even if
-                   the .prop file is valid).
+        UnknownPropertyWarning: If an unknown property type ID is found and the property was either
+                                skipped (array), or the deserialization was terminated early and the
+                                PropertyList was trimmed. May happen to other Spark games even if
+                                the .prop file is technically valid.
+        IncompletePropertyListWarning: More specific than UnknownPropertyWarning, inherits from it.
+                                       If the deserialization was terminated early and the
+                                       PropertyList was trimmed.
         EOFError: If the stream ended unexpectedly.
     '''
     property_list: PropertyList = {}
@@ -516,7 +535,18 @@ def deserialize(io: BinaryIO) -> PropertyList:
         try:
             value_type: type = _IDS_TYPES[type_id]
         except KeyError:
-            raise TypeError(f'Unknown or unsupported property type ID: 0x{type_id:x}.') from None
+            if (flags & PropertyFlags.ARRAY) == PropertyFlags.ARRAY:
+                count: UInt32 = read(UInt32, io, True)
+                item_size: UInt32 = read(UInt32, io, True)
+                _read_exact(io, count * item_size)
+                warn(f'Skipped the array 0x{property_id:08x} as it specifies an unknown'
+                     + f'property type ID: 0x{type_id:x}.',
+                     UnknownPropertyWarning)
+                continue
+            warn(f'Property 0x{property_id:08x} is an unknown or unsupported property type ID: '
+                 + f'0x{type_id:x}. Stopped reading: the resulting PropertyList is incomplete.',
+                 IncompletePropertyListWarning)
+            break
         property_type: _PropertyType = _TYPE_IDS_LENGTHS[value_type]
         if (flags & PropertyFlags.ARRAY) == PropertyFlags.ARRAY: #smfx checks for ==, not (&) ==
             property_list[property_id] = read(list[value_type], io, property_type[2])
